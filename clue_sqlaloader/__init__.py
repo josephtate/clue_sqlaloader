@@ -70,10 +70,19 @@ class Loader(yaml.Loader):
                 f = getattr(obj, fname)
                 f(value)
 
-            args = ['%s=%s' % (k, v) for k, v in fields.items()]
+            # the next chunk is just for debugging output
+            args = []
+            for k,v in fields.items():
+                try:
+                    args.append('%s=%s' % (k, v))
+                except UnicodeDecodeError:
+                    args.append('%s=%s' % (k, v.encode('base64')))
 
             logger.debug('New object: %s(%s)' %
                          (obj.__class__.__name__, ','.join(args)))
+
+            #Now complete the record loading
+
             self.session.add(obj)
 
             refname = record.get('refname')
